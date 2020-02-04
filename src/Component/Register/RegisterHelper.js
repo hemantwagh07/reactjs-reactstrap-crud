@@ -1,5 +1,5 @@
 const helper = {
-    radioGroup : [
+    radioGroup: [
         {
             name: 'gender',
             id: 'male',
@@ -13,30 +13,30 @@ const helper = {
             displaylbl: 'Female'
         }
     ],
-    checkboxGroup : [
+    checkboxGroup: [
         {
             name: 'language',
             id: 'marathi',
             value: 'Marathi',
             displaylbl: 'Marathi'
-    
+
         },
         {
             name: 'language',
             id: 'hindi',
             value: 'Hindi',
             displaylbl: 'Hindi'
-    
+
         },
         {
             name: 'language',
             id: 'english',
             value: 'English',
             displaylbl: 'English'
-    
+
         }
     ],
-    languageDD : [
+    languageDD: [
         {
             optionValue: '',
             optionText: 'Please Select Location'
@@ -58,7 +58,7 @@ const helper = {
             optionText: 'Kolkata'
         }
     ],
-    initialState : {
+    initialState: {
         fname: '',
         lname: '',
         emailid: '',
@@ -66,7 +66,10 @@ const helper = {
         gender: '',
         language: [],
         location: '',
-        userData : [],
+        userData: [],
+        modal: false,
+        alertvisible:false,
+        alertmessage:'',
         errors: {
             fname: '',
             lname: '',
@@ -77,7 +80,7 @@ const helper = {
             location: ''
         }
     },
-    errormessages : {
+    errormessages: {
         required: {
             fname: 'First Name is required',
             lname: 'Last Name is required',

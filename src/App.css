@@ -1,7 +1,13 @@
 .App {
   text-align: center;
 }
-
+table{
+  text-align: center;
+}
+.actiontd:hover{
+  cursor: pointer;
+  background-color: grey;
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;

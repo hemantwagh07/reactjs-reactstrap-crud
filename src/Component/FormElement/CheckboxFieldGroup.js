@@ -33,7 +33,7 @@ export default function CheckboxFieldGroup(props) {
     return (
         <FormGroup row>
             <Col sm="2">
-                <Label for="gender">{props.checkboxGrouplbl}</Label>
+                <Label for="language">{props.checkboxGrouplbl}</Label>
             </Col>
             <Col sm="10">
                 {checkboxes.map((item, ind) => {

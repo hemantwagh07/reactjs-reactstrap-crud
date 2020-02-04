@@ -1,18 +1,30 @@
 import React, { Component } from 'react'
-import Table from '../Table/Table';
+import Table from '../Table/UserTable';
 import InputField from '../FormElement/InputField';
 import RadioFieldGroup from '../FormElement/RadioFieldGroup';
 import CheckboxFieldGroup from '../FormElement/CheckboxFieldGroup';
 import DropdownField from '../FormElement/DropdownField';
 import helper from './RegisterHelper';
+import ModalPopup from '../FormElement/ModalPopup';
+import { Col, FormGroup, Button, Form, Alert } from 'reactstrap';
 
 export default class Register extends Component {
-    userData = [];
     currentEdit = false;
-
+    modalconfig = {
+        title: '',
+        body: '',
+        btntext: '',
+        pbtnAction: () => 0,
+    };
     constructor(props) {
         super(props);
         this.state = helper.initialState;
+        this.toggle = this.toggle.bind(this);
+    }
+    toggle() {
+        this.setState({
+            modal: !this.state.modal
+        });
     }
     validateForm = () => {
         let errors = { ...this.state.errors };
@@ -58,32 +70,32 @@ export default class Register extends Component {
     }
     submitHandler = (e) => {
         e.preventDefault();
-
         if (this.validateForm()) {
             let { fname, lname, emailid, mobileno, gender, language, location, userData } = this.state;
             userData.push({ fname, lname, emailid, mobileno, gender, language, location });
             fname = lname = emailid = mobileno = gender = location = '';
             language = [];
             this.setState({ fname, lname, emailid, mobileno, gender, language, location, userData });
+            this.showAlert('Record inserted successfully');
         }
     }
 
     updateHandler = (e) => {
         e.preventDefault();
         if (this.validateForm()) {
-            if (window.confirm("Do you want to update?")) {
-                let { fname, lname, emailid, mobileno, gender, language, location, userData } = this.state;
-                userData[this.currentEdit] = {
-                    fname: fname, lname: lname,
-                    emailid: emailid, mobileno: mobileno,
-                    gender: gender, language: language,
-                    location: location,
-                }
-                fname = lname = emailid = mobileno = gender = location = '';
-                language = [];
-                this.setState({ fname, lname, emailid, mobileno, gender, language, location, userData });
-                this.currentEdit = false;
+            let { fname, lname, emailid, mobileno, gender, language, location, userData } = this.state;
+            userData[this.currentEdit] = {
+                fname: fname, lname: lname,
+                emailid: emailid, mobileno: mobileno,
+                gender: gender, language: language,
+                location: location,
             }
+            fname = lname = emailid = mobileno = gender = location = '';
+            language = [];
+            this.setState({ fname, lname, emailid, mobileno, gender, language, location, userData });
+            this.currentEdit = false;
+            this.showAlert('Record updated successfully');
+            this.toggle();
         }
     }
     textChangeHandler = (e) => {
@@ -121,26 +133,46 @@ export default class Register extends Component {
         });
     }
     onEditClick = (id) => {
-        console.log('Edit clicked', id);
         let currentUserData = this.state.userData[id];
         this.setState({ ...currentUserData });
         this.currentEdit = id;
     }
-    onDeleteClick = (id) => {
-        console.log('Delete clicked', id);
-        if (window.confirm("Do you want to delete?")) {
-            let { userData } = this.state;
-            userData.splice(id, 1);
-            this.setState({ userData });
-        }
+    deleteHandler = (id) => {
+        let { userData } = this.state;
+        userData.splice(id, 1);
+        this.setState({ userData });
+        this.toggle();
+        this.showAlert('Record deleted successfully');
+    }
+    showUpdatePopup = (e) => {
+        e.preventDefault();
+        this.modalconfig.title = 'Update Record';
+        this.modalconfig.body = 'Do you want to update this record ?';
+        this.modalconfig.btntext = 'Update';
+        this.modalconfig.pbtnAction = this.updateHandler;
+        this.toggle();
+    }
+    showDeletePopup = (id) => {
+        this.modalconfig.title = 'Delete Record';
+        this.modalconfig.body = 'Do you want to delete this record ? This action cannot be undone';
+        this.modalconfig.btntext = 'Delete';
+        this.modalconfig.pbtnAction = () => this.deleteHandler(id);
+        this.toggle();
+    }
+    showAlert = (message) => {
+        this.setState({ alertvisible: true, alertmessage: message }, () => {
+            window.setTimeout(() => {
+                this.setState({ alertvisible: false, alertmessage: '' })
+            }, 2000)
+        });
     }
 
     render() {
         return (
-            <div className="col-sm-10">
-                <form>
+            <Col sm="10">
+                <Form>
                     <h1>Register</h1>
-
+                    <Alert color="info" isOpen={this.state.alertvisible} fade={true}>{this.state.alertmessage}</Alert>
                     <InputField type="text" name="fname" id="fname"
                         placeholder="Enter first name" onchangefun={this.textChangeHandler}
                         fieldvalue={this.state.fname} displaylbl="First Name"
@@ -176,19 +208,20 @@ export default class Register extends Component {
                         onchangefun={this.textChangeHandler}
                         validationError={this.state.errors.location}></DropdownField>
 
-                    <div className="row">
-                        <div className="col-sm-2"></div>
-                        <div className="col-sm-10">
-                            {this.currentEdit === false ? <button type="submit" onClick={this.submitHandler}
-                                className="btn btn-primary">Submit</button> : <button type="submit" onClick={this.updateHandler}
-                                    className="btn btn-primary">Update</button>}
-                        </div>
-                    </div>
-
-                </form>
+                    <FormGroup row>
+                        <Col sm="2"></Col>
+                        <Col sm="10">
+                            {this.currentEdit === false ?
+                                <Button color="primary" type="submit" onClick={this.submitHandler}>Submit</Button> :
+                                <Button color="primary" type="submit" onClick={this.showUpdatePopup}>Update</Button>}
+                        </Col>
+                    </FormGroup>
+                    <ModalPopup isOpen={this.state.modal} toggle={this.toggle}
+                        modaltitle={this.modalconfig.title} modalbody={this.modalconfig.body} btntext={this.modalconfig.btntext} pbtnaction={this.modalconfig.pbtnAction}></ModalPopup>
+                </Form>
                 <br />
-                {this.state.userData.length > 0 ? <Table deleteclicked={this.onDeleteClick} data={this.state.userData} editclicked={this.onEditClick} /> : ''}
-            </div>
+                {this.state.userData.length > 0 ? <Table deleteclicked={this.showDeletePopup} data={this.state.userData} editclicked={this.onEditClick} /> : ''}
+            </Col>
         )
     }
 }
