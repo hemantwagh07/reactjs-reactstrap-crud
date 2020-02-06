@@ -26,77 +26,36 @@ export default class Register extends Component {
             modal: !this.state.modal
         });
     }
-    validateForm = () => {
-        let errors = { ...this.state.errors };
-        errors.fname = errors.lname = errors.emailid = errors.mobileno = errors.gender = errors.language = errors.location = '';
-        let emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-        let valid = true;
-        if (this.state.fname === '') {
-            errors.fname = helper.errormessages.required.fname;
-            valid = false;
-        }
-        if (this.state.lname === '') {
-            errors.lname = helper.errormessages.required.lname;
-            valid = false;
-        }
-        if (this.state.emailid === '') {
-            errors.emailid = helper.errormessages.required.emailid;
-            valid = false;
-        } else if (emailPattern.test(this.state.emailid) === false) {
-            errors.emailid = 'Email id is invalid';
-            valid = false;
-        }
-        if (this.state.mobileno === '') {
-            errors.mobileno = helper.errormessages.required.mobileno;
-            valid = false;
-        }
-        if (this.state.gender === '') {
-            errors.gender = helper.errormessages.required.gender;
-            valid = false;
-        }
-        if (this.state.location === '') {
-            errors.location = helper.errormessages.required.location;
-            valid = false;
-        }
-        if (this.state.language.length < 1) {
-            errors.language = helper.errormessages.required.language;
-            valid = false;
-        }
-        if (valid === false) {
-            this.setState({ errors });
-            return false;
-        }
-        return true;
-    }
     submitHandler = (e) => {
         e.preventDefault();
-        if (this.validateForm()) {
+        let validate = helper.validation(this.state);
+        if (validate.status) {
             let { fname, lname, emailid, mobileno, gender, language, location, userData } = this.state;
             userData.push({ fname, lname, emailid, mobileno, gender, language, location });
             fname = lname = emailid = mobileno = gender = location = '';
             language = [];
             this.setState({ fname, lname, emailid, mobileno, gender, language, location, userData });
             this.showAlert('Record inserted successfully');
+        } else {
+            this.setState({ errors: validate.errors });
         }
     }
 
     updateHandler = (e) => {
         e.preventDefault();
-        if (this.validateForm()) {
-            let { fname, lname, emailid, mobileno, gender, language, location, userData } = this.state;
-            userData[this.currentEdit] = {
-                fname: fname, lname: lname,
-                emailid: emailid, mobileno: mobileno,
-                gender: gender, language: language,
-                location: location,
-            }
-            fname = lname = emailid = mobileno = gender = location = '';
-            language = [];
-            this.setState({ fname, lname, emailid, mobileno, gender, language, location, userData });
-            this.currentEdit = false;
-            this.showAlert('Record updated successfully');
-            this.toggle();
+        let { fname, lname, emailid, mobileno, gender, language, location, userData } = this.state;
+        userData[this.currentEdit] = {
+            fname: fname, lname: lname,
+            emailid: emailid, mobileno: mobileno,
+            gender: gender, language: language,
+            location: location,
         }
+        fname = lname = emailid = mobileno = gender = location = '';
+        language = [];
+        this.setState({ fname, lname, emailid, mobileno, gender, language, location, userData });
+        this.currentEdit = false;
+        this.showAlert('Record updated successfully');
+        this.toggle();
     }
     textChangeHandler = (e) => {
         let { name, value } = e.target;
@@ -146,17 +105,18 @@ export default class Register extends Component {
     }
     showUpdatePopup = (e) => {
         e.preventDefault();
-        this.modalconfig.title = 'Update Record';
-        this.modalconfig.body = 'Do you want to update this record ?';
-        this.modalconfig.btntext = 'Update';
-        this.modalconfig.pbtnAction = this.updateHandler;
-        this.toggle();
+        let validate = helper.validation(this.state);
+        if (validate.status) {
+            helper.updatePopupConfig.pbtnAction = this.updateHandler;
+            helper.modalConfig = helper.updatePopupConfig;
+            this.toggle();
+        } else {
+            this.setState({ errors: validate.errors });
+        }
     }
     showDeletePopup = (id) => {
-        this.modalconfig.title = 'Delete Record';
-        this.modalconfig.body = 'Do you want to delete this record ? This action cannot be undone';
-        this.modalconfig.btntext = 'Delete';
-        this.modalconfig.pbtnAction = () => this.deleteHandler(id);
+        helper.deletePopupConfig.pbtnAction = () => this.deleteHandler(id);
+        helper.modalConfig = helper.deletePopupConfig;
         this.toggle();
     }
     showAlert = (message) => {
@@ -217,7 +177,7 @@ export default class Register extends Component {
                         </Col>
                     </FormGroup>
                     <ModalPopup isOpen={this.state.modal} toggle={this.toggle}
-                        modaltitle={this.modalconfig.title} modalbody={this.modalconfig.body} btntext={this.modalconfig.btntext} pbtnaction={this.modalconfig.pbtnAction}></ModalPopup>
+                        modaltitle={helper.modalConfig.title} modalbody={helper.modalConfig.body} btntext={helper.modalConfig.btntext} pbtnaction={helper.modalConfig.pbtnAction}></ModalPopup>
                 </Form>
                 <br />
                 {this.state.userData.length > 0 ? <Table deleteclicked={this.showDeletePopup} data={this.state.userData} editclicked={this.onEditClick} /> : ''}
